@@ -46,7 +46,8 @@ opt = parser.parse_args()
 
 img_shape = (opt.channels, opt.img_size, opt.img_size)
 
-cuda = True 
+cuda = True
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 accr = 0
 accr_best = 0
@@ -85,11 +86,11 @@ class Generator(nn.Module):
         img = self.conv_blocks2(img)
         return img
         
-generator = Generator().cuda()
+generator = Generator().to(device)
     
-teacher = torch.load(opt.teacher_dir + 'teacher').cuda()
+teacher = torch.load(opt.teacher_dir + 'teacher').to(device)
 teacher.eval()
-criterion = torch.nn.CrossEntropyLoss().cuda()
+criterion = torch.nn.CrossEntropyLoss().to(device)
 
 teacher = nn.DataParallel(teacher)
 generator = nn.DataParallel(generator)
@@ -102,7 +103,7 @@ def kdloss(y, teacher_scores):
 
 if opt.dataset == 'MNIST':    
     # Configure data loader   
-    net = LeNet5Half().cuda()
+    net = LeNet5Half().to(device)
     net = nn.DataParallel(net)
     data_test = MNIST(opt.data,
                       train=False,
@@ -123,13 +124,13 @@ if opt.dataset != 'MNIST':
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
     ])
     if opt.dataset == 'cifar10': 
-        net = resnet.ResNet18().cuda()
+        net = resnet.ResNet18().to(device)
         net = nn.DataParallel(net)
         data_test = CIFAR10(opt.data,
                           train=False,
                           transform=transform_test)
     if opt.dataset == 'cifar100': 
-        net = resnet.ResNet18(num_classes=100).cuda()
+        net = resnet.ResNet18(num_classes=100).to(device)
         net = nn.DataParallel(net)
         data_test = CIFAR100(opt.data,
                           train=False,
@@ -167,7 +168,7 @@ for epoch in range(opt.n_epochs):
 
     for i in range(120):
         net.train()
-        z = Variable(torch.randn(opt.batch_size, opt.latent_dim)).cuda()
+        z = Variable(torch.randn(opt.batch_size, opt.latent_dim)).to(device)
         optimizer_G.zero_grad()
         optimizer_S.zero_grad()        
         gen_imgs = generator(z)
@@ -188,8 +189,8 @@ for epoch in range(opt.n_epochs):
             
     with torch.no_grad():
         for i, (images, labels) in enumerate(data_test_loader):
-            images = images.cuda()
-            labels = labels.cuda()
+            images = images.to(device)
+            labels = labels.to(device)
             net.eval()
             output = net(images)
             avg_loss += criterion(output, labels).sum()

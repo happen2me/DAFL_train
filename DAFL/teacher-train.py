@@ -24,7 +24,8 @@ parser.add_argument('--data', type=str, default='/cache/data/')
 parser.add_argument('--output_dir', type=str, default='/cache/models/')
 args = parser.parse_args()
 
-os.makedirs(args.output_dir, exist_ok=True)  
+os.makedirs(args.output_dir, exist_ok=True)
+device  = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 acc = 0
 acc_best = 0
@@ -32,6 +33,7 @@ acc_best = 0
 if args.dataset == 'MNIST':
     
     data_train = MNIST(args.data,
+                       download=True,
                        transform=transforms.Compose([
                            transforms.Resize((32, 32)),
                            transforms.ToTensor(),
@@ -39,6 +41,7 @@ if args.dataset == 'MNIST':
                            ]))
     data_test = MNIST(args.data,
                       train=False,
+                      download=True,
                       transform=transforms.Compose([
                           transforms.Resize((32, 32)),
                           transforms.ToTensor(),
@@ -48,8 +51,8 @@ if args.dataset == 'MNIST':
     data_train_loader = DataLoader(data_train, batch_size=256, shuffle=True, num_workers=8)
     data_test_loader = DataLoader(data_test, batch_size=1024, num_workers=8)
 
-    net = LeNet5().cuda()
-    criterion = torch.nn.CrossEntropyLoss().cuda()
+    net = LeNet5().to(device)
+    criterion = torch.nn.CrossEntropyLoss().to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
     
 if args.dataset == 'cifar10':
@@ -67,6 +70,7 @@ if args.dataset == 'cifar10':
     ])
 
     data_train = CIFAR10(args.data,
+                         download=True,
                        transform=transform_train)
     data_test = CIFAR10(args.data,
                       train=False,
@@ -75,8 +79,8 @@ if args.dataset == 'cifar10':
     data_train_loader = DataLoader(data_train, batch_size=128, shuffle=True, num_workers=8)
     data_test_loader = DataLoader(data_test, batch_size=100, num_workers=0)
 
-    net = resnet.ResNet34().cuda()
-    criterion = torch.nn.CrossEntropyLoss().cuda()
+    net = resnet.ResNet34().to(device)
+    criterion = torch.nn.CrossEntropyLoss().to(device)
     optimizer = torch.optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
 
 if args.dataset == 'cifar100':
@@ -101,8 +105,8 @@ if args.dataset == 'cifar100':
                       
     data_train_loader = DataLoader(data_train, batch_size=128, shuffle=True, num_workers=0)
     data_test_loader = DataLoader(data_test, batch_size=128, num_workers=0)
-    net = resnet.ResNet34(num_classes=100).cuda()
-    criterion = torch.nn.CrossEntropyLoss().cuda()
+    net = resnet.ResNet34(num_classes=100).to(device)
+    criterion = torch.nn.CrossEntropyLoss().to(device)
     optimizer = torch.optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
 
 
@@ -124,7 +128,7 @@ def train(epoch):
     net.train()
     loss_list, batch_list = [], []
     for i, (images, labels) in enumerate(data_train_loader):
-        images, labels = Variable(images).cuda(), Variable(labels).cuda()
+        images, labels = Variable(images).to(device), Variable(labels).to(device)
  
         optimizer.zero_grad()
  
@@ -149,7 +153,7 @@ def test():
     avg_loss = 0.0
     with torch.no_grad():
         for i, (images, labels) in enumerate(data_test_loader):
-            images, labels = Variable(images).cuda(), Variable(labels).cuda()
+            images, labels = Variable(images).to(device), Variable(labels).to(device)
             output = net(images)
             avg_loss += criterion(output, labels).sum()
             pred = output.data.max(1)[1]
