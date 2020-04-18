@@ -87,6 +87,7 @@ def run():
     teacher = LeNet5()
     teacher.load_state_dict(torch.load("cache/models/lenet_mnist.pt"))
     teacher.eval()
+    teacher.to(device)
     criterion = torch.nn.CrossEntropyLoss().to(device)
 
     teacher = nn.DataParallel(teacher)
