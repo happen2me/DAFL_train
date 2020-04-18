@@ -15,10 +15,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from torchvision.datasets.mnist import MNIST
-from lenet import LeNet5Half
 from torchvision.datasets import CIFAR10
 from torchvision.datasets import CIFAR100
 import resnet
+from lenet5 import LeNet5
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST','cifar10','cifar100'])
@@ -83,7 +83,9 @@ class Generator(nn.Module):
 def run():
     generator = Generator().to(device)
 
-    teacher = torch.load(opt.teacher_dir + 'teacher').to(device)
+    #teacher = torch.load(opt.teacher_dir + 'teacher').to(device)
+    teacher = LeNet5()
+    teacher.load_state_dict(torch.load("cache/models/lenet_mnist.pt"))
     teacher.eval()
     criterion = torch.nn.CrossEntropyLoss().to(device)
 
