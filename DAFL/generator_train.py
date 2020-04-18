@@ -115,8 +115,8 @@ def run():
             if i == 1:
                 print ("[Epoch %d/%d] [loss_oh: %f] [loss_ie: %f] [loss_a: %f]" % (epoch, opt.n_epochs,loss_one_hot.item(), loss_information_entropy.item(), loss_activation.item()))
 
-        torch.save(generator.state_dict(), opt.output_dir + "generator_only.pt")
-        print("generator saved at ", opt.output_dir + "generator_only.pt")
+    torch.save(generator.state_dict(), opt.output_dir + "generator_only.pt")
+    print("generator saved at ", opt.output_dir + "generator_only.pt")
 
 
 if __name__ == "__main__":
