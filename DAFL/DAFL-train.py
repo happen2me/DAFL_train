@@ -28,8 +28,8 @@ import resnet
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST','cifar10','cifar100'])
-parser.add_argument('--data', type=str, default='/cache/data/')
-parser.add_argument('--teacher_dir', type=str, default='/cache/models/')
+parser.add_argument('--data', type=str, default='cache/data/')
+parser.add_argument('--teacher_dir', type=str, default='cache/models/')
 parser.add_argument('--n_epochs', type=int, default=200, help='number of epochs of training')
 parser.add_argument('--batch_size', type=int, default=512, help='size of the batches')
 parser.add_argument('--lr_G', type=float, default=0.2, help='learning rate')
@@ -40,7 +40,7 @@ parser.add_argument('--channels', type=int, default=1, help='number of image cha
 parser.add_argument('--oh', type=float, default=1, help='one hot loss')
 parser.add_argument('--ie', type=float, default=10, help='information entropy loss')
 parser.add_argument('--a', type=float, default=0.1, help='activation loss')
-parser.add_argument('--output_dir', type=str, default='/cache/models/')
+parser.add_argument('--output_dir', type=str, default='cache/models/')
 
 opt = parser.parse_args()
 
@@ -202,4 +202,5 @@ for epoch in range(opt.n_epochs):
     accr = round(float(total_correct) / len(data_test), 4)
     if accr > accr_best:
         torch.save(net,opt.output_dir + 'student')
+        torch.save(generator.state_dict(), opt.output_dir + "generator.pt")
         accr_best = accr
