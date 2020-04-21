@@ -162,6 +162,7 @@ def run():
     # ----------
 
     batches_done = 0
+    accr_best = 0
     for epoch in range(opt.n_epochs):
 
         total_correct = 0
